@@ -1,3 +1,3 @@
 [webserver]
 192.168.1.68 user=node1 domain="192.168.1.68"
-192.168.1.24 user=node2 domain="alexsimisi.cd"
+192.168.1.24 user=node2 domain="192.168.1.24"

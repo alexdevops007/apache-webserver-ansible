@@ -2,7 +2,7 @@
 - name: webserver installation (with documentation)
   hosts: webserver
   remote_user: root
-  
+
   tasks:
     - name: apache & php installation
       apt:
@@ -17,39 +17,7 @@
         shell: /bin/false
 
     - name: create user folder
-      file: 
-        path: /var/www/{{ domain  }}
-        state: directory
-        owner: "{{ user  }}"
-        group: "{{ user  }}"
-        mode: 0755
-
-    - name: phpinfo
-      copy:
-        src: files/index.php
-        dest: /var/www/{{ domain  }}
-        root@ansible:/home/sysadmin/server-apache# mcedit install.yml
-/home/sysadmin/server-apache/install.yml   [BM--]  8 L:[  1+30  31/ 32] *(604 / 605b) 0010 0x00A                                                                                                                                                                                                           [*][X]
----
-- name: webserver installation (with documentation)
-  hosts: webserver
-  remote_user: root
-..
-  tasks:
-    - name: apache & php installation
-      apt:
-        pkg:
-          - apache2
-          - php
-
-    - name: add user
-      user:
-        name: "{{ user  }}"
-        password: !
-        shell: /bin/false
-
-    - name: create user folder
-      file:.
+      file:
         path: /var/www/{{ domain  }}
         state: directory
         owner: "{{ user  }}"
@@ -63,3 +31,53 @@
         owner: "{{ user  }}"
         group: "{{ user  }}"
         mode: 0644
+
+    - name: Copy virtualhost
+      template:
+        src: templates/virtualhost.conf.j2
+        dest: /etc/apache2/sites-available/virtualhost.conf
+
+    - name: Remove default virtualhost
+      command: a2dissite 000-default.conf
+      args:
+        removes: /etc/apache2/sites-enabled/000-default.conf
+      notify: reload apache
+
+    - name: Add virtaulhost.conf
+      command: a2ensite virtualhost.conf
+      args:
+        creates: /etc/apache2/sites-enabled/virtualhost.conf
+      notify: reload apache
+
+  handlers:
+    - name: reload apache
+      service:
+        name: apache2
+        state: reloaded
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
