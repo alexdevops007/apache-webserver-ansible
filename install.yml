@@ -2,6 +2,8 @@
 - name: webserver installation (with documentation)
   hosts: webserver
   remote_user: root
+  vars:
+    disable_default: true
 
   tasks:
     - name: apache & php installation
@@ -16,68 +18,41 @@
         password: !
         shell: /bin/false
 
-    - name: create user folder
+    - name: document root exist
       file:
-        path: /var/www/{{ domain  }}
+        path: "/var/www/{{ domain }}"
         state: directory
-        owner: "{{ user  }}"
-        group: "{{ user  }}"
-        mode: 0755
+        owner: "{{ user }}"
+        mode: '0755'
 
-    - name: phpinfo
+    - name: custom index.html
       copy:
-        src: files/index.php
-        dest: /var/www/{{ domain  }}
-        owner: "{{ user  }}"
-        group: "{{ user  }}"
-        mode: 0644
+        dest: "/var/www/{{ domain }}/index.html"
+        content: |
+                    Custom Web Page
 
-    - name: Copy virtualhost
+    - name: set up Apache virtualhost
       template:
-        src: templates/virtualhost.conf.j2
-        dest: /etc/apache2/sites-available/virtualhost.conf
+        src: "templates/virtualhost.conf.j2"
+        dest: "/etc/apache2/sites-available/{{ http_conf }}"
 
-    - name: Remove default virtualhost
-      command: a2dissite 000-default.conf
-      args:
-        removes: /etc/apache2/sites-enabled/000-default.conf
-      notify: reload apache
+    - name: enable new site
+      command: "/usr/sbin/a2ensite {{ http_conf }}"
+      notify: reload Apache
 
-    - name: Add virtaulhost.conf
-      command: a2ensite virtualhost.conf
-      args:
-        creates: /etc/apache2/sites-enabled/virtualhost.conf
-      notify: reload apache
+    - name: disable default Apache site
+      command: "/usr/sbin/a2dissite 000-default.conf"
+      when: disable_default
+      notify: reload Apache
+
+    - name: open firewall
+      ufw:
+        rule: allow
+        port: "{{ port }}"
+        proto: tcp
 
   handlers:
-    - name: reload apache
+    - name: reload Apache
       service:
         name: apache2
         state: reloaded
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

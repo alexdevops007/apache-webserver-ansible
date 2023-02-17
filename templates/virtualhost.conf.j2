@@ -1,4 +1,7 @@
-<VirtualHost *:80>
+<VirtualHost *:{{ port  }}>
   ServerName {{ domain  }}
   DocumentRoot /var/www/{{ domain  }}
+  ServerAlias www.{{ domain }}
+  ErrorLog ${APACHE_LOG}/error.log
+  CustomLog ${APACHE_LOG}/access.log combined
 </VirtualHost>
