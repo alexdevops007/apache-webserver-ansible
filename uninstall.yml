@@ -1,0 +1,25 @@
+---
+- name: uninstall webserver
+  hosts: webserver
+  remote_user: root
+
+  tasks:
+    - name: Remove virtualhost
+      command: a2dissite virtualhost.conf
+      args:
+        removes: /etc/apache2/sites-enabled/virtualhost.conf
+
+    - name: Remove packages
+      apt:
+        state: absent
+        pkg: 
+          - apache2
+          - php
+
+    - name: Delete files
+      file:
+        path: "{{ item  }}"
+        state: absent
+      with_items: 
+        - /etc/apache2/sites-available/{{ http_conf }}
+        - /var/www/{{ domain }}
